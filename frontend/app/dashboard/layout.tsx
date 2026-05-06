@@ -19,6 +19,8 @@ import {
   User,
   Receipt,
   Package,
+  ShieldCheck,
+  BarChart3,
 } from "lucide-react";
 import { PageLoader } from "@/components/ui/Skeleton";
 import { NotificationProvider } from "@/context/NotificationContext";
@@ -61,6 +63,10 @@ const ROLE_NAV: Record<string, NavItem[]> = {
     { label: "Clinic Billing",   href: "/dashboard/receptionist/billing",  icon: Receipt },
     { label: "Clinic Inventory", href: "/dashboard/admin/inventory",       icon: Package },
   ],
+  SUPER_ADMIN: [
+    { label: "Platform Overview", href: "/dashboard/super-admin",          icon: ShieldCheck },
+    { label: "All Clinics",       href: "/dashboard/super-admin#clinics",  icon: BarChart3 },
+  ],
 };
 
 function NavLink({ href, icon: Icon, label, active }: NavItem & { active: boolean }) {
@@ -93,10 +99,16 @@ export default function DashboardLayout({
   const { user, loading } = useContext(AuthContext);
   const router = useRouter();
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.push("/login");
   }, [user, loading, router]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   if (loading) return <PageLoader />;
   if (!user) return null;
@@ -125,18 +137,38 @@ export default function DashboardLayout({
 
   return (
     <NotificationProvider>
-      <div className="flex min-h-screen bg-gray-50 transition-colors duration-300 selection:bg-blue-100 selection:text-blue-900">
-      {/* ── Sidebar ──────────────────────────────────────────────────── */}
-      <aside className="w-64 bg-white border-r border-gray-100 flex flex-col sticky top-0 h-screen overflow-y-auto flex-shrink-0 z-20 shadow-xl shadow-gray-200/20">
+      <div className="flex min-h-screen bg-gray-50 transition-colors duration-300 selection:bg-blue-100 selection:text-blue-900 overflow-hidden">
+      
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-30 bg-gray-900/50 backdrop-blur-sm lg:hidden transition-opacity"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
+      {/* ── Sidebar ──────────────────────────────────────────────────── */}
+      <aside 
+        className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-100 flex flex-col h-screen overflow-y-auto flex-shrink-0 z-40 shadow-xl shadow-gray-200/20 transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         {/* Brand */}
-        <div className="px-5 py-6 border-b border-gray-100">
+        <div className="px-5 py-6 border-b border-gray-100 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-blue-600/30 transition-all duration-300">
               <HeartPulse className="w-[18px] h-[18px] text-white" />
             </div>
             <span className="font-bold text-gray-900 text-lg tracking-tight">MediClinic</span>
           </Link>
+          <button 
+            className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         {/* Navigation */}
@@ -209,7 +241,17 @@ export default function DashboardLayout({
       {/* ── Main Content ─────────────────────────────────────────────── */}
       <main className="flex-1 overflow-auto relative flex flex-col">
         {/* Top Header for Notifications */}
-        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-end px-6 sticky top-0 z-20 flex-shrink-0">
+        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-20 flex-shrink-0">
+          <div className="flex items-center">
+            <button 
+              className="lg:hidden p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
           <NotificationBell />
         </header>
         

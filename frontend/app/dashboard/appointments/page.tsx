@@ -27,6 +27,12 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     fetchAppointments();
+    // Poll every 15 seconds
+    const intervalId = setInterval(() => {
+      fetchAppointments();
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleStatusChange = async (id: number, status: string) => {

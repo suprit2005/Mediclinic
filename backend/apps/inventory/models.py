@@ -1,6 +1,7 @@
 from django.db import models
 
 class InventoryItem(models.Model):
+    clinic = models.ForeignKey("clinics.Clinic", on_delete=models.CASCADE, related_name="inventory_items", null=True)
     name = models.CharField(max_length=255)
     sku = models.CharField(max_length=100, unique=True)
     category = models.CharField(max_length=100, blank=True)

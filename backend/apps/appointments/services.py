@@ -174,7 +174,7 @@ def notify_running_late(*, doctor_clinic, delay_minutes, user=None):
     ).select_related("patient__user", "clinic")
     
     count = 0
-    from apps.notifications.utils import send_appointment_email, send_twilio_sms
+    from apps.notifications.tasks import send_email_task, send_sms_task
     
     for app in upcoming_appointments:
         patient_email = app.patient.user.email
@@ -184,10 +184,10 @@ def notify_running_late(*, doctor_clinic, delay_minutes, user=None):
         
         msg = f"Hi {app.patient.user.first_name}, due to unforeseen circumstances, Dr. {doctor_last_name} at {clinic_name} is running approximately {delay_minutes} minutes late. Your appointment scheduled for {app.start_time.strftime('%H:%M')} will be slightly delayed. We appreciate your patience."
 
-        send_appointment_email(patient_email, "MediClinic: Appointment Delay Notice", msg)
+        send_email_task.delay(patient_email, "MediClinic: Appointment Delay Notice", msg)
         
         if patient_phone:
-            send_twilio_sms(patient_phone, msg)
+            send_sms_task.delay(patient_phone, msg)
         
         count += 1
         

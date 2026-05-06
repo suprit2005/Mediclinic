@@ -1,8 +1,58 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from apps.appointments.models import Appointment
 from .models import Notification
 from django.contrib.auth import get_user_model
+
+# Track previous status to detect transitions
+_appointment_status_cache = {}
+
+@receiver(pre_save, sender=Appointment)
+def cache_appointment_previous_status(sender, instance, **kwargs):
+    """Store previous status before save so we can detect COMPLETED transitions."""
+    if instance.pk:
+        try:
+            _appointment_status_cache[instance.pk] = Appointment.objects.get(pk=instance.pk).status
+        except Appointment.DoesNotExist:
+            pass
+
+@receiver(post_save, sender=Appointment)
+def auto_create_invoice_on_completion(sender, instance, created, **kwargs):
+    """
+    Automatically generate an Invoice when an appointment transitions to COMPLETED.
+    Skips if an invoice for this appointment already exists.
+    """
+    if created:
+        return
+
+    previous_status = _appointment_status_cache.pop(instance.pk, None)
+    if previous_status == instance.status:
+        return  # No status change, skip
+
+    if instance.status == Appointment.StatusChoices.COMPLETED and previous_status != Appointment.StatusChoices.COMPLETED:
+        from apps.billing.models import Invoice, InvoiceItem
+        from django.db import transaction
+
+        # Only create if one doesn't already exist for this appointment
+        if not Invoice.objects.filter(appointment=instance).exists():
+            with transaction.atomic():
+                # Get the consultation fee from the doctor's clinic link
+                consultation_fee = getattr(instance.doctor_clinic, 'consultation_fee', 500)
+
+                invoice = Invoice.objects.create(
+                    patient=instance.patient,
+                    appointment=instance,
+                    total_amount=consultation_fee,
+                    status=Invoice.StatusChoices.PENDING,
+                )
+
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    description=f"Consultation — Dr. {instance.doctor_clinic.doctor.user.get_full_name()}",
+                    amount=consultation_fee,
+                )
+
+
 
 @receiver(post_save, sender=Appointment)
 def create_appointment_notification(sender, instance, created, **kwargs):
@@ -39,14 +89,14 @@ def create_appointment_notification(sender, instance, created, **kwargs):
             )
             
             # Real Omnichannel
-            from .utils import send_appointment_email, send_twilio_sms
-            send_appointment_email(
+            from .tasks import send_email_task, send_sms_task
+            send_email_task.delay(
                 instance.patient.user.email, 
                 "MediClinic: Appointment Confirmed", 
                 msg
             )
             if instance.patient.phone:
-                send_twilio_sms(instance.patient.phone, msg)
+                send_sms_task.delay(instance.patient.phone, msg)
         
         # 3. Notify clinic staff (Admins and Receptionists)
         doctor_name = "Unknown"
@@ -101,9 +151,9 @@ def create_appointment_notification(sender, instance, created, **kwargs):
 
                 # Send real SMS/Email to patient on cancellation
                 if instance.patient and getattr(instance.patient, 'user', None):
-                    from .utils import send_appointment_email, send_twilio_sms
+                    from .tasks import send_email_task, send_sms_task
                     msg = f"Your appointment on {instance.appointment_date} has been cancelled."
-                    send_appointment_email(instance.patient.user.email, "Appointment Cancelled", msg)
+                    send_email_task.delay(instance.patient.user.email, "Appointment Cancelled", msg)
                     if instance.patient.phone:
-                        send_twilio_sms(instance.patient.phone, msg)
+                        send_sms_task.delay(instance.patient.phone, msg)
 

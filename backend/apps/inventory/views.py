@@ -6,9 +6,21 @@ from .models import InventoryItem, StockTransaction
 from .serializers import InventoryItemSerializer, StockTransactionSerializer
 
 class InventoryItemViewSet(viewsets.ModelViewSet):
-    queryset = InventoryItem.objects.all().order_by('name')
     serializer_class = InventoryItemSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if hasattr(user, 'clinic') and user.clinic:
+            return InventoryItem.objects.filter(clinic=user.clinic).order_by('name')
+        return InventoryItem.objects.none()
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        if hasattr(user, 'clinic') and user.clinic:
+            serializer.save(clinic=user.clinic)
+        else:
+            serializer.save()
 
     @action(detail=True, methods=['post'], url_path='adjust-stock')
     def adjust_stock(self, request, pk=None):

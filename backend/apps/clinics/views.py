@@ -55,3 +55,32 @@ class ReceptionistListView(ClinicQuerysetMixin, ListAPIView):
     def get_queryset(self):
         # Base query filtered further by ClinicQuerysetMixin
         return User.objects.filter(role=User.RoleChoices.RECEPTIONIST)
+
+from rest_framework.permissions import AllowAny
+from .serializers import ClinicRegistrationSerializer
+
+class ClinicRegistrationView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ClinicRegistrationSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        result = serializer.save()
+
+        # In production, this is where you would call Stripe API to create a Customer
+        # e.g., stripe.Customer.create(...) and update the clinic object.
+        
+        return Response(
+            {
+                "success": True,
+                "message": "Clinic and admin account created successfully.",
+                "clinic_id": result["clinic"].id,
+                "admin_id": result["admin"].id,
+            },
+            status=status.HTTP_201_CREATED,
+        )

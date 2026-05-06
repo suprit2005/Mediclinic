@@ -53,12 +53,17 @@ def stripe_webhook(request):
     payload = request.body
 
     try:
-        # Note: In a production environment, you verify the signature using:
-        # sig_header = request.headers.get('STRIPE_SIGNATURE', '')
-        # event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
-        event = json.loads(payload.decode('utf-8'))
+        sig_header = request.headers.get('STRIPE_SIGNATURE', '')
+        webhook_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', '')
+        if webhook_secret:
+            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        else:
+            # Fallback for local testing without signature if secret not set
+            event = json.loads(payload.decode('utf-8'))
+    except stripe.error.SignatureVerificationError as e:
+        return Response({'error': 'Invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     if event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']

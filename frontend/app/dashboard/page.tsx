@@ -42,6 +42,8 @@ export default function DashboardPage() {
         router.push("/dashboard/patient");
     } else if (user && user.role === "DOCTOR") {
         router.push("/dashboard/appointments");
+    } else if (user && user.role === "SUPER_ADMIN") {
+        router.push("/dashboard/super-admin");
     } else {
         loadDashboard();
     }

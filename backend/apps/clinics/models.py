@@ -20,6 +20,11 @@ class Clinic(models.Model):
         choices=SubscriptionChoices.choices,
         default=SubscriptionChoices.BASIC
     )
+    
+    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
+    stripe_subscription_id = models.CharField(max_length=255, blank=True, null=True)
+    subscription_status = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. active, past_due, canceled")
+    subscription_end_date = models.DateTimeField(blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
 

@@ -56,11 +56,21 @@ export default function DoctorDashboard() {
   });
 
   useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
     if (user && user.role === "DOCTOR") {
       fetchTodayAppointments();
+      // Poll every 15 seconds for real-time queue updates
+      intervalId = setInterval(() => {
+        fetchTodayAppointments();
+      }, 15000);
     } else if (user) {
       router.push("/dashboard");
     }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [user, router]);
 
   const fetchTodayAppointments = async () => {

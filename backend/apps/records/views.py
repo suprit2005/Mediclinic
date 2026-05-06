@@ -45,7 +45,17 @@ class MedicalRecordCreateUpdateView(generics.CreateAPIView, generics.UpdateAPIVi
 
         record = MedicalRecord.objects.filter(appointment_id=appointment_id).first()
         if not record:
-            return Response({"detail": "No medical record found for this appointment."}, status=status.HTTP_404_NOT_FOUND)
+            if user.role == "DOCTOR":
+                record = MedicalRecord.objects.create(
+                    appointment=appointment,
+                    patient=appointment.patient,
+                    doctor_clinic=appointment.doctor_clinic
+                )
+                if appointment.status == Appointment.StatusChoices.SCHEDULED:
+                    appointment.status = Appointment.StatusChoices.IN_PROGRESS
+                    appointment.save(update_fields=["status"])
+            else:
+                return Response({"detail": "No medical record found for this appointment."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.get_serializer(record)
         data = serializer.data
