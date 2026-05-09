@@ -17,8 +17,9 @@ async function getDoctors(specialty: string) {
   }
 }
 
-export default async function SpecialtyDoctorsPage({ params }: { params: { specialty: string } }) {
-  const specialty = decodeURIComponent(params.specialty);
+export default async function SpecialtyDoctorsPage({ params }: { params: Promise<{ specialty: string }> }) {
+  const { specialty: rawSpecialty } = await params;
+  const specialty = decodeURIComponent(rawSpecialty);
   const doctors = await getDoctors(specialty);
 
   return (

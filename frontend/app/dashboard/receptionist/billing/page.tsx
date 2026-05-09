@@ -5,9 +5,20 @@ import { Plus, Receipt, FileText, Trash2 } from "lucide-react";
 import api from "@/services/api";
 
 type InvoiceItem = { description: string; amount: string };
+type Invoice = {
+  id: number;
+  patient: number;
+  patient_name: string;
+  patient_email: string;
+  appointment_date: string | null;
+  appointment_doctor: string | null;
+  total_amount: string;
+  status: string;
+  issued_date: string;
+};
 
 export default function ReceptionistBilling() {
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -105,7 +116,7 @@ export default function ReceptionistBilling() {
             <thead className="bg-gray-50 text-gray-600 font-semibold border-b border-gray-100">
               <tr>
                 <th className="px-6 py-4">Invoice ID</th>
-                <th className="px-6 py-4">Patient ID</th>
+                <th className="px-6 py-4">Patient</th>
                 <th className="px-6 py-4">Date Issued</th>
                 <th className="px-6 py-4">Total Amount</th>
                 <th className="px-6 py-4">Status</th>
@@ -115,9 +126,12 @@ export default function ReceptionistBilling() {
               {invoices.map(inv => (
                 <tr key={inv.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4 font-bold text-gray-900">INV-{inv.id.toString().padStart(4, '0')}</td>
-                  <td className="px-6 py-4 font-medium text-gray-700">#{inv.patient}</td>
-                  <td className="px-6 py-4 text-gray-600">{new Date(inv.issued_date).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 font-bold text-gray-900">${inv.total_amount}</td>
+                  <td className="px-6 py-4">
+                    <p className="font-semibold text-gray-900">{inv.patient_name || `Patient #${inv.patient}`}</p>
+                    {inv.patient_email && <p className="text-xs text-gray-400 mt-0.5">{inv.patient_email}</p>}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">{new Date(inv.issued_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                  <td className="px-6 py-4 font-bold text-gray-900">${parseFloat(inv.total_amount).toFixed(2)}</td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase ${
                       inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'

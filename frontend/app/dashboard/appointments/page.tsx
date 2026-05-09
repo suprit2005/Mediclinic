@@ -4,20 +4,42 @@ import { useEffect, useState, useContext } from "react";
 import { getAppointments, updateAppointmentStatus } from "@/services/appointments";
 import { AuthContext } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { 
+  CalendarCheck, 
+  Clock, 
+  MoreVertical, 
+  User, 
+  CheckCircle2, 
+  XCircle, 
+  AlertCircle, 
+  FileText,
+  Activity
+} from "lucide-react";
+import { PageLoader } from "@/components/ui/Skeleton";
+
+interface Appointment {
+  id: number;
+  appointment_date: string;
+  start_time: string;
+  end_time: string;
+  doctor_name: string;
+  clinic_name: string;
+  status: string;
+  patient_name?: string;
+}
 
 export default function AppointmentsPage() {
-
-  const [appointments, setAppointments] = useState<any[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-
   const { user } = useContext(AuthContext);
-
   const router = useRouter();
 
   const fetchAppointments = async () => {
     try {
       const data = await getAppointments();
-      setAppointments(data);
+      // Ensure we get an array
+      const appts = Array.isArray(data) ? data : data.results || [];
+      setAppointments(appts);
     } catch {
       console.error("Failed to fetch appointments");
     } finally {
@@ -27,7 +49,7 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     fetchAppointments();
-    // Poll every 15 seconds
+    // Poll every 15 seconds for real-time updates
     const intervalId = setInterval(() => {
       fetchAppointments();
     }, 15000);
@@ -44,133 +66,158 @@ export default function AppointmentsPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const styles: any = {
-      SCHEDULED: "bg-yellow-200 text-yellow-800",
-      CONFIRMED: "bg-green-200 text-green-800",
-      COMPLETED: "bg-blue-200 text-blue-800",
-      CANCELLED: "bg-red-200 text-red-800",
-      NO_SHOW: "bg-gray-200 text-gray-800",
+  const getStatusConfig = (status: string) => {
+    const configs: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
+      SCHEDULED: { bg: "bg-blue-50", text: "text-blue-700", icon: Clock },
+      CONFIRMED: { bg: "bg-green-50", text: "text-green-700", icon: CheckCircle2 },
+      COMPLETED: { bg: "bg-gray-50", text: "text-gray-700", icon: FileText },
+      CANCELLED: { bg: "bg-red-50", text: "text-red-700", icon: XCircle },
+      NO_SHOW:   { bg: "bg-amber-50", text: "text-amber-700", icon: AlertCircle },
+      IN_PROGRESS: { bg: "bg-purple-50", text: "text-purple-700", icon: Activity },
     };
-
-    return (
-      <span className={`px-2 py-1 rounded text-sm ${styles[status]}`}>
-        {status}
-      </span>
-    );
+    return configs[status] || { bg: "bg-slate-50", text: "text-slate-700", icon: Clock };
   };
 
-  if (loading) return <div className="p-6">Loading appointments...</div>;
+  if (loading) return <PageLoader message="Loading appointments..." />;
 
   return (
-    <div className="p-6">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <CalendarCheck className="w-5 h-5 text-blue-600" />
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Appointments</h1>
+          </div>
+          <p className="text-gray-500 text-sm">Manage your upcoming and past appointments.</p>
+        </div>
+      </div>
 
-      <h1 className="text-2xl font-bold mb-4">Appointments</h1>
+      {/* List */}
+      {appointments.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center shadow-sm">
+          <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <CalendarCheck className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-1">No appointments found</h3>
+          <p className="text-gray-500 text-sm">You do not have any appointments scheduled yet.</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-50/80 text-gray-500 font-medium uppercase tracking-wider text-xs">
+                <tr>
+                  <th className="px-6 py-4">Date & Time</th>
+                  <th className="px-6 py-4">Doctor</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {appointments.map((appt) => {
+                  const StatusIcon = getStatusConfig(appt.status).icon;
+                  const statusColors = getStatusConfig(appt.status);
 
-      <table className="w-full border">
+                  return (
+                    <tr key={appt.id} className="hover:bg-gray-50/50 transition-colors group">
+                      {/* Date & Time */}
+                      <td className="px-6 py-4">
+                        <div className="font-semibold text-gray-900 mb-0.5">
+                          {appt.appointment_date}
+                        </div>
+                        <div className="text-gray-500 text-xs flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5" />
+                          {appt.start_time.substring(0, 5)} - {appt.end_time.substring(0, 5)}
+                        </div>
+                      </td>
 
-        <thead className="bg-gray-100">
+                      {/* Doctor */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 flex-shrink-0">
+                            <User className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-gray-900">Dr. {appt.doctor_name || "Unknown"}</div>
+                            <div className="text-gray-500 text-xs">{appt.clinic_name || "MediClinic"}</div>
+                          </div>
+                        </div>
+                      </td>
 
-          <tr>
-            <th className="border p-2">Date</th>
-            <th className="border p-2">Start</th>
-            <th className="border p-2">End</th>
-            <th className="border p-2">Doctor</th>
-            <th className="border p-2">Status</th>
-            <th className="border p-2">Actions</th>
-          </tr>
+                      {/* Status */}
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${statusColors.bg} ${statusColors.text}`}>
+                          <StatusIcon className="w-3.5 h-3.5" />
+                          {appt.status.replace("_", " ")}
+                        </span>
+                      </td>
 
-        </thead>
+                      {/* Actions */}
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          
+                          {/* PATIENT CANCEL */}
+                          {user?.role === "PATIENT" && appt.status === "SCHEDULED" && (
+                            <button
+                              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-lg transition-colors border border-red-200"
+                              onClick={() => handleStatusChange(appt.id, "CANCELLED")}
+                            >
+                              Cancel
+                            </button>
+                          )}
 
-        <tbody>
+                          {/* DOCTOR CONFIRM */}
+                          {user?.role === "DOCTOR" && appt.status === "SCHEDULED" && (
+                            <button
+                              className="px-3 py-1.5 bg-green-50 hover:bg-green-100 text-green-700 text-xs font-bold rounded-lg transition-colors border border-green-200"
+                              onClick={() => handleStatusChange(appt.id, "CONFIRMED")}
+                            >
+                              Confirm
+                            </button>
+                          )}
 
-          {appointments.map((appt) => (
+                          {/* DOCTOR COMPLETE */}
+                          {user?.role === "DOCTOR" && appt.status === "CONFIRMED" && (
+                            <button
+                              className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg transition-colors border border-blue-200"
+                              onClick={() => handleStatusChange(appt.id, "COMPLETED")}
+                            >
+                              Complete
+                            </button>
+                          )}
 
-            <tr key={appt.id}>
+                          {/* DOCTOR CONSULT */}
+                          {user?.role === "DOCTOR" && (appt.status === "CONFIRMED" || appt.status === "IN_PROGRESS" || appt.status === "COMPLETED") && (
+                            <button
+                              className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold rounded-lg transition-colors border border-purple-200"
+                              onClick={() => router.push(`/dashboard/doctor/consult/${appt.id}`)}
+                            >
+                              Consult
+                            </button>
+                          )}
 
-              <td className="border p-2">{appt.appointment_date}</td>
-              <td className="border p-2">{appt.start_time}</td>
-              <td className="border p-2">{appt.end_time}</td>
-              <td className="border p-2">{appt.doctor_name}</td>
-              <td className="border p-2">{getStatusBadge(appt.status)}</td>
+                          {/* PATIENT VIEW RECORDS */}
+                          {user?.role === "PATIENT" && appt.status === "COMPLETED" && (
+                            <button
+                              className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg transition-colors border border-indigo-200"
+                              onClick={() => router.push(`/dashboard/history/${appt.id}`)}
+                            >
+                              View Record
+                            </button>
+                          )}
 
-              <td className="border p-2 space-x-2">
-
-                {/* PATIENT CANCEL */}
-
-                {user.role === "PATIENT" && appt.status === "SCHEDULED" && (
-                  <button
-                    className="bg-red-500 text-white px-2 py-1 rounded"
-                    onClick={() =>
-                      handleStatusChange(appt.id, "CANCELLED")
-                    }
-                  >
-                    Cancel
-                  </button>
-                )}
-
-                {/* DOCTOR CONFIRM */}
-
-                {user.role === "DOCTOR" && appt.status === "SCHEDULED" && (
-                  <button
-                    className="bg-green-500 text-white px-2 py-1 rounded"
-                    onClick={() =>
-                      handleStatusChange(appt.id, "CONFIRMED")
-                    }
-                  >
-                    Confirm
-                  </button>
-                )}
-
-                {/* DOCTOR COMPLETE */}
-
-                {user.role === "DOCTOR" && appt.status === "CONFIRMED" && (
-                  <button
-                    className="bg-blue-500 text-white px-2 py-1 rounded"
-                    onClick={() =>
-                      handleStatusChange(appt.id, "COMPLETED")
-                    }
-                  >
-                    Complete
-                  </button>
-                )}
-
-                {/* DOCTOR CONSULT */}
-
-                {user.role === "DOCTOR" && appt.status === "COMPLETED" && (
-                  <button
-                    className="bg-purple-500 text-white px-2 py-1 rounded"
-                    onClick={() =>
-                      router.push(`/dashboard/appointments/${appt.id}/consult`)
-                    }
-                  >
-                    Consult
-                  </button>
-                )}
-
-                {/* PATIENT VIEW RECORDS */}
-                {user.role === "PATIENT" && appt.status === "COMPLETED" && (
-                  <button
-                    className="bg-indigo-500 text-white px-2 py-1 rounded"
-                    onClick={() =>
-                      router.push(`/dashboard/appointments/${appt.id}/record`)
-                    }
-                  >
-                    View Record
-                  </button>
-                )}
-
-
-              </td>
-
-            </tr>
-
-          ))}
-
-        </tbody>
-
-      </table>
-
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

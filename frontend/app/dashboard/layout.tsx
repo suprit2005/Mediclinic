@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
@@ -21,6 +21,7 @@ import {
   Package,
   ShieldCheck,
   BarChart3,
+  CreditCard,
 } from "lucide-react";
 import { PageLoader } from "@/components/ui/Skeleton";
 import { NotificationProvider } from "@/context/NotificationContext";
@@ -55,6 +56,7 @@ const ROLE_NAV: Record<string, NavItem[]> = {
     { label: "Manage Receptionists", href: "/dashboard/admin/receptionists", icon: UserCog },
     { label: "Doctor Schedules",     href: "/dashboard/admin/schedules",     icon: Clock },
     { label: "Clinic Inventory",     href: "/dashboard/admin/inventory",     icon: Package },
+    { label: "Subscription",         href: "/dashboard/admin/subscription",  icon: CreditCard },
   ],
   RECEPTIONIST: [
     { label: "Manage Patients",  href: "/dashboard/receptionist/patients", icon: Users },

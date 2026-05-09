@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
 from apps.accounts.views import CustomTokenObtainPairView
-from apps.doctors.views import PublicSpecialtyListView
+from apps.doctors.views import PublicSpecialtyListView, PublicDoctorListView
 
 
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
     path("api/accounts/", include("apps.accounts.urls")),
     path("api/appointments/", include("apps.appointments.urls")),
     path("api/public/specialties/", PublicSpecialtyListView.as_view(), name="root-public-specialties"),
+    path("api/public/doctors/", PublicDoctorListView.as_view(), name="root-public-doctors"),
 
     # JWT Authentication
     path("api/token/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
@@ -26,4 +27,5 @@ urlpatterns = [
     path("api/notifications/", include("apps.notifications.urls")),
     path("api/billing/", include("apps.billing.urls")),
     path("api/inventory/", include("apps.inventory.urls")),
+    path("api/subscriptions/", include("apps.subscriptions.urls")),
 ]

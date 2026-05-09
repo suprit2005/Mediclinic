@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'apps.notifications.apps.NotificationsConfig',
     'apps.billing.apps.BillingConfig',
     'apps.inventory.apps.InventoryConfig',
+    'apps.subscriptions.apps.SubscriptionsConfig',
     "corsheaders",
 ]
 
@@ -196,4 +197,10 @@ CELERY_TASK_SERIALIZER = 'json'
 # In development (DEBUG=True), run tasks synchronously — no Redis needed.
 # In production, set DEBUG=False and point CELERY_BROKER_URL to real Redis.
 CELERY_TASK_ALWAYS_EAGER = DEBUG
+
+# ── Stripe ────────────────────────────────────────────────────────────────────
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "sk_test_dummy")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+STRIPE_SUBSCRIPTION_WEBHOOK_SECRET = os.environ.get("STRIPE_SUBSCRIPTION_WEBHOOK_SECRET", "")
+
 CELERY_TASK_EAGER_PROPAGATES = True

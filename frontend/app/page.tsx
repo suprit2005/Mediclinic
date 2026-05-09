@@ -96,21 +96,11 @@ export default async function LandingPage() {
           <div className="relative hidden md:block h-[500px] lg:h-[600px] w-full bg-gray-100 rounded-3xl overflow-hidden shadow-2xl border-4 border-white mb-8 md:mb-0">
              <div className="absolute inset-0 bg-blue-600/5 mix-blend-multiply z-10 pointer-events-none"></div>
              <img 
-               src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=2070&auto=format&fit=crop" 
-               alt="Professional Doctor" 
-               className="w-full h-full object-cover"
+               src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop" 
+               alt="Doctor measuring patient blood pressure" 
+               className="w-full h-full object-cover object-center"
              />
-             
-             {/* Floating badge */}
-             <div className="absolute bottom-8 left-[-30px] lg:left-[-40px] z-20 bg-white p-4 rounded-xl shadow-xl border border-gray-100 flex items-center gap-4 hover:-translate-y-1 transition-transform cursor-default">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm">Verified Doctors</p>
-                  <p className="text-xs text-gray-500">100% Expert Verified</p>
-                </div>
-             </div>
+           
           </div>
         </div>
       </section>
@@ -235,7 +225,142 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* ── Pricing / Subscription Section ──────────────────────────────────── */}
+      <section className="py-28 bg-gray-50 border-t border-gray-100" id="pricing">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Heading */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 font-medium text-sm mb-6 border border-blue-100">
+              Simple, Transparent Pricing
+            </div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+              Plans for Every Clinic
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+              From solo practitioners to large multi-specialty hospitals — scale your practice with the right plan.
+            </p>
+          </div>
+
+          {/* Pricing Cards */}
+          <div className="grid md:grid-cols-3 gap-8 items-start">
+
+            {/* Starter */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 flex flex-col">
+              <div className="mb-8">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3">Starter</p>
+                <div className="flex items-end gap-1 mb-3">
+                  <span className="text-5xl font-bold text-gray-900">$0</span>
+                  <span className="text-gray-500 mb-1.5">/month</span>
+                </div>
+                <p className="text-gray-500 text-sm leading-relaxed">Perfect for solo practitioners getting started with digital scheduling.</p>
+              </div>
+              <ul className="space-y-3.5 mb-10 flex-grow">
+                {[
+                  '1 Doctor account',
+                  'Up to 50 appointments/month',
+                  'Basic patient records',
+                  'Email notifications',
+                  'Community support',
+                ].map((f) => (
+                  <li key={f} className="flex items-center gap-3 text-sm text-gray-600">
+                    <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 text-xs font-bold">✓</span>
+                    {f}
+                  </li>
+                ))}
+                {['Analytics & reporting', 'Billing & invoicing', 'Multi-clinic support'].map((f) => (
+                  <li key={f} className="flex items-center gap-3 text-sm text-gray-400">
+                    <span className="w-5 h-5 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center shrink-0 text-xs font-bold">✕</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/login">
+                <Button variant="outline" className="w-full">Get Started Free</Button>
+              </Link>
+            </div>
+
+            {/* Professional — highlighted */}
+            <div className="bg-blue-600 rounded-2xl shadow-2xl shadow-blue-600/30 p-8 flex flex-col relative ring-2 ring-blue-600 -mt-4 -mb-4">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="bg-gradient-to-r from-orange-400 to-pink-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg uppercase tracking-wider">
+                  Most Popular
+                </span>
+              </div>
+              <div className="mb-8 pt-2">
+                <p className="text-sm font-bold text-blue-200 uppercase tracking-widest mb-3">Professional</p>
+                <div className="flex items-end gap-1 mb-3">
+                  <span className="text-5xl font-bold text-white">$49</span>
+                  <span className="text-blue-200 mb-1.5">/month</span>
+                </div>
+                <p className="text-blue-100 text-sm leading-relaxed">For growing clinics that need powerful tools to manage teams and patients.</p>
+              </div>
+              <ul className="space-y-3.5 mb-10 flex-grow">
+                {[
+                  'Up to 10 Doctor accounts',
+                  'Unlimited appointments',
+                  'Full patient records & EHR',
+                  'SMS + Email notifications',
+                  'Billing & auto-invoicing',
+                  'Advanced analytics',
+                  'Receptionist & staff roles',
+                  'Priority support',
+                ].map((f) => (
+                  <li key={f} className="flex items-center gap-3 text-sm text-white">
+                    <span className="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0 text-xs font-bold">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/subscribe?plan=professional">
+                <Button className="w-full bg-white text-blue-600 hover:bg-blue-50 font-bold shadow-lg">
+                  Start Free Trial
+                </Button>
+              </Link>
+            </div>
+
+            {/* Enterprise */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 flex flex-col">
+              <div className="mb-8">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3">Enterprise</p>
+                <div className="flex items-end gap-1 mb-3">
+                  <span className="text-5xl font-bold text-gray-900">$199</span>
+                  <span className="text-gray-500 mb-1.5">/month</span>
+                </div>
+                <p className="text-gray-500 text-sm leading-relaxed">For hospital networks and multi-branch clinics requiring custom configurations.</p>
+              </div>
+              <ul className="space-y-3.5 mb-10 flex-grow">
+                {[
+                  'Unlimited Doctor accounts',
+                  'Unlimited appointments',
+                  'Multi-clinic management',
+                  'Super Admin dashboard',
+                  'Custom integrations & API',
+                  'White-label branding',
+                  'Dedicated account manager',
+                  'SLA-backed 24/7 support',
+                ].map((f) => (
+                  <li key={f} className="flex items-center gap-3 text-sm text-gray-600">
+                    <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 text-xs font-bold">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/subscribe?plan=enterprise">
+                <Button variant="outline" className="w-full">Get Enterprise</Button>
+              </Link>
+            </div>
+
+          </div>
+
+          {/* Money-back note */}
+          <p className="text-center text-sm text-gray-500 mt-10">
+            🔒 14-day free trial on all paid plans. No credit card required. Cancel anytime.
+          </p>
+        </div>
+      </section>
+
       {/* Footer */}
+
       <footer className="bg-white pt-16 pb-8 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -279,7 +404,7 @@ export default async function LandingPage() {
           </div>
           
           <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 gap-4">
-            <p>&copy; {new Date().getFullYear()} Mediclinic. All rights reserved.</p>
+            <p suppressHydrationWarning>&copy; {new Date().getFullYear()} Mediclinic. All rights reserved.</p>
             <div className="flex space-x-6">
               <a href="#" className="hover:text-gray-900 transition-colors font-medium">Twitter</a>
               <a href="#" className="hover:text-gray-900 transition-colors font-medium">LinkedIn</a>

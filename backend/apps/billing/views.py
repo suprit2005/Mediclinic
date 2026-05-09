@@ -19,8 +19,20 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.role == 'PATIENT':
-            return Invoice.objects.filter(patient__user=user)
-        return Invoice.objects.all()
+            return Invoice.objects.filter(patient__user=user).select_related(
+                'patient__user', 'appointment'
+            ).prefetch_related('items', 'transactions').order_by('-created_at')
+        elif user.role in ['CLINIC_ADMIN', 'RECEPTIONIST', 'DOCTOR']:
+            # Clinic staff only see invoices for their clinic (via appointment or patient clinic)
+            return Invoice.objects.filter(
+                appointment__clinic=user.clinic
+            ).select_related(
+                'patient__user', 'appointment'
+            ).prefetch_related('items', 'transactions').order_by('-created_at')
+        # Super admin sees all
+        return Invoice.objects.select_related(
+            'patient__user', 'appointment'
+        ).prefetch_related('items', 'transactions').order_by('-created_at')
 
     @action(detail=True, methods=['post'], url_path='create-payment-intent')
     def create_payment_intent(self, request, pk=None):

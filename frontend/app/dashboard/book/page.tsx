@@ -184,8 +184,6 @@ export default function BookingWizard() {
   const [selectedSlot, setSelectedSlot] = useState<string>("");
   const [reason, setReason] = useState("");
 
-  const [reason, setReason] = useState("");
-
   // ── Derived: unique specialties at selected clinic ───────────────────────
   const availableSpecialties = useMemo(() => {
     const set = new Set(doctors.map((d) => d.specialization).filter(Boolean));
