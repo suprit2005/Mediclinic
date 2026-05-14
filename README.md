@@ -233,8 +233,8 @@ mediclinic-system/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/anvesh9621/Multi-Clinic-Healthcare-Platform.git
-cd Multi-Clinic-Healthcare-Platform
+git clone https://github.com/anmolbajpai58/Mediclinic.git
+cd Mediclinic
 ```
 
 ---
@@ -451,27 +451,26 @@ Every significant action (create, update, delete, login, logout, book, cancel) i
 
 ## 🤝 Contributing
 
-This is a proprietary project. Contributions are restricted to authorized team members only.
+This is an open project. Contributions are welcome!
 
-If you are part of the development team:
-1. Create a feature branch from `main`: `git checkout -b feature/your-feature-name`
-2. Commit with clear messages: `git commit -m "feat: add prescription PDF export"`
-3. Open a pull request against `main` with a detailed description
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature-name`
+3. Commit with clear messages: `git commit -m "feat: add prescription PDF export"`
+4. Open a pull request against `main` with a detailed description
 
 ---
 
 ## 📄 License
 
-This project is **proprietary and confidential**.  
-Unauthorized copying, distribution, or modification is strictly prohibited.
+This project is licensed under the MIT License.
 
-© 2025 MediClinic. All rights reserved.
+© 2025 Anmol Bajpai. All rights reserved.
 
 ---
 
 <div align="center">
 
-Made with ❤️ for better healthcare
+Made with ❤️ for better healthcare by [Anmol Bajpai](https://github.com/anmolbajpai58)
 
 **[⬆ Back to top](#mediclinic--multi-clinic-healthcare-platform)**
 
