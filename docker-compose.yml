@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: mediclinic_db
+    environment:
+      POSTGRES_DB: mediclinic_db
+      POSTGRES_USER: mediclinic_user
+      POSTGRES_PASSWORD: mediclinic_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mediclinic_user -d mediclinic_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: mediclinic_redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: mediclinic_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://mediclinic_user:mediclinic_pass@db:5432/mediclinic_db
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=mediclinic_db
+      - DB_USER=mediclinic_user
+      - DB_PASSWORD=mediclinic_pass
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery_worker:
+    build: ./backend
+    container_name: mediclinic_celery_worker
+    command: celery -A config worker --loglevel=info --concurrency=2
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://mediclinic_user:mediclinic_pass@db:5432/mediclinic_db
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=mediclinic_db
+      - DB_USER=mediclinic_user
+      - DB_PASSWORD=mediclinic_pass
+      - REDIS_URL=redis://redis:6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: mediclinic_frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env.local
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
